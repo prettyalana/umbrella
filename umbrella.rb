@@ -1,22 +1,23 @@
-pp "Alana"
+require "http"
+require "json"
+require "ascii_charts"
+
+#pp "Alana"
 
 pp "Where are you?"
 
-user_location = gets.chomp.gsub(" ", "%20")
+#user_location = gets.chomp.gsub(" ", "%20")
 
-# user_location = "Chicago"
+user_location = "Chicago"
 
 pp user_location
 
-gmaps_url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + user_location + "&key=" + ENV.fetch("GMAPS_KEY")
+gmaps_url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + user_location + "&key=" + ENV.fetch("GMAPS_KEY") #Could I use string interpolation here?
 
-require "http"
 
 user_response = HTTP.get(gmaps_url)
 
 raw_response = user_response.to_s
-
-require "json"
 
 parsed_response = JSON.parse(raw_response)
 
@@ -31,6 +32,51 @@ locator = geo.fetch("location")
 pp latitude = locator.fetch("lat")
 pp longitude = locator.fetch("lng")
 
+
+
+
+
+
+
+weather_api_key = ENV.fetch("PIRATE_WEATHER_KEY")
+
+weather_url = "https://api.pirateweather.net/forecast/#{weather_api_key}/#{latitude},#{longitude}"
+
+much_needed_info = HTTP.get(weather_url)
+
+# important_info = much_needed_info.to_s
+
+
+
+response_search = JSON.parse(much_needed_info)
+  
+location_weather = response_search.fetch("currently")
+
+pp current_temp = location_weather.fetch("temperature")
+
+hourly_temp = response_search.fetch("hourly")
+
+pp summary = hourly_temp.fetch("summary")
+
+precip_data = hourly_temp.fetch("data")
+
+precip_prob = precip_data[1]
+
+precip_predict = precip_prob.fetch("precipProbability")
+
+precip_percent = (precip_predict * 100).round
+
+puts "#{precip_percent}%"
+
+#What method would I use to turn this decimal number into a percentage?
+
+# How do I get the precipitation probablility for the next 12 hours?
+
+if precip_predict > 0.10
+  puts "You might want to carry an umbrella!"
+else
+  puts "You probably won't need an umbrella today."
+end
 
 
 
